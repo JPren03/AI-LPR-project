@@ -6,41 +6,19 @@ class VehicleDetector:
         self.model = YOLO(model_path)
         self.conf = conf
 
-        # COCO class names
-        self.class_list = [
-            'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
-            'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign',
-            'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep',
-            'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
-            'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard',
-            'sports ball', 'kite', 'baseball bat', 'baseball glove',
-            'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass',
-            'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
-            'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
-            'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-            'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
-            'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
-            'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear',
-            'hair drier', 'toothbrush'
-        ]
-
         # Vehicle classes
-        self.vehicle_classes = {
-            'car',
-            'motorcycle',
-            'bus',
-            'truck'   # vans included here
-        }
+        self.vehicle_classes = {'car', 'motorcycle', 'bus', 'truck'}
 
     def detect(self, image):
         """
         Detect vehicles in a single image.
         """
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         results = self.model.predict(
-            image,
+            image_rgb,
             conf=self.conf,
-            verbose=False
+            verbose=False   
         )
 
         detections = results[0].boxes.data.detach().cpu().numpy()
@@ -52,7 +30,7 @@ class VehicleDetector:
             x1, y1, x2, y2 = map(int, det[:4])
             confidence = float(det[4])
             class_id = int(det[5])
-            class_name = self.class_list[class_id]
+            class_name = self.model.names[class_id]
 
             if class_name not in self.vehicle_classes:
                 continue
